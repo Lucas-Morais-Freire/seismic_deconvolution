@@ -6,19 +6,23 @@ module seisDeconv
 
     function genReflect(ns) result(Ref)
         integer, intent(in) :: ns
-        integer, dimension(ns) :: Ref
         integer :: i, seed
+        integer, dimension(ns) :: Ref
+        !real :: f
 
         seed = time()
         call srand(seed)
 
         do i = 1, ns
-            if (mod(irand(), 100) >= 95) then
-                Ref(i) = mod(irand(), 100) - 50
-            else
-                Ref(i) = 0
-            end if
+            Ref(i) = 0
         end do
+        
+        i = mod(irand(), 20)
+        do while (i <= ns)
+            Ref(i) = mod(irand(), 100) - 50
+            i = i + mod(irand(), 100) - 50 + 100
+        end do
+
     end function
 
 end module seisDeconv

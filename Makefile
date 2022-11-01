@@ -13,5 +13,8 @@ ${BIN}: ${MAIN} ${SRCS}
 run: ${BIN}
 	@./${BIN}
 
-plot: run
-	python ${PLOT}
+plot:
+	@python3 ${PLOT}
+
+random: run
+	@python3 ${PLOT}
