@@ -26,29 +26,36 @@ module seisDeconv
             end do
         end function genReflect
 
-        subroutine genPulse(Psi, si, amp, a, f, ns)
-            integer, intent(in) :: ns !number of samples
-            integer :: i, si
-            real(kind=8), intent(in) :: a, amp, f
-            real(kind=8), dimension(-ns/2 + 1:ns/2) :: Psi
-            si = -ns/2 + 1
-            
-            do i = si, si + ns - 1
-                Psi(i) = amp*(1 - 2*(pi*a*i)**2)*exp(-(pi*f*i)**2)
+        subroutine genPulse(Psi, zi, amp, a, f, ns)
+            integer :: ns, i, zi
+            real(kind=8) :: a, amp, f
+            real(kind=8), dimension(ns) :: Psi
+            zi = ns/2 + 1
+
+            do i = 1, ns
+                Psi(i) = amp*(1 - 2*(pi*a*(i - ns/2 - 1))**2)*exp(-(pi*f*(i - ns/2 - 1))**2)
             end do            
         end subroutine
 
-        subroutine writeSignal(s, si, ns, file)
-            integer :: si, ns, i
+        subroutine writeSignal(s, zi, ns, file)
+            integer :: zi, ns, i
             real(kind=8), dimension(ns) :: s
             character(*) :: file
 
             open (1, file = file, status='old')
-            write(1,*) si
+            write(1,*) zi
             do i = 1, ns
                 write(1,'(F13.6)') s(i)
             end do
             close(1)
         end subroutine
+
+        ! function conv(x, h, zx, zh) result(y)
+        !    integer, intent(in) :: zx, zh
+        !    real(kind = 8), dimension(sx: sx + nx - 1) :: x
+        !    real(kind = 8), dimension(sh: sh + nh - 1) :: h
+        !    real(kind = 8), dimension(:) :: y
+
+        ! end function
 
 end module seisDeconv
