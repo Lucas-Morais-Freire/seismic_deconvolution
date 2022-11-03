@@ -50,11 +50,19 @@ module seisDeconv
             close(1)
         end subroutine
 
-        ! function conv(x, h, zx, zh) result(y)
-        !    integer, intent(in) :: zx, zh
-        !    real(kind = 8), dimension(sx: sx + nx - 1) :: x
-        !    real(kind = 8), dimension(sh: sh + nh - 1) :: h
-        !    real(kind = 8), dimension(:) :: y
+        ! function conv(x, h, zx, zh, sx, sh) result(y)
+        !     integer, intent(in) :: zx, zh, sx, sh
+        !     real(kind = 8), dimension(:), allocatable, intent(in) :: x
+        !     real(kind = 8), dimension(:), allocatable, intent(in) :: h
+        !     real(kind = 8), dimension(:), allocatable :: y
+
+        !     allocate(x(1:3))
+        !     allocate(h(1:3))
+        !     allocate(y(1:3))
+
+        !     deallocate(x)
+        !     deallocate(h)
+        !     deallocate(y)
 
         ! end function
 
