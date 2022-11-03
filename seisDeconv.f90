@@ -9,42 +9,46 @@ module seisDeconv
             implicit none
             integer, intent(in) :: ns
             integer :: i, seed
-            integer, dimension(ns) :: Ref
+            real(kind=8), dimension(ns) :: Ref
             !real :: f
 
             seed = time()
             call srand(seed)
 
             do i = 1, ns
-                Ref(i) = 0
+                Ref(i) = 0.d0
             end do
             
             i = mod(irand(), 20)
             do while (i <= ns)
-                Ref(i) = mod(irand(), 100) - 50
+                Ref(i) = real(mod(irand(), 100) - 50, kind=8)
                 i = i + mod(irand(), 100) - 50 + 100
             end do
         end function genReflect
 
-        function genPulse(amp, a, f, ns) result(Psi)
-            integer, intent(in) :: ns
-            integer :: i
+        subroutine genPulse(Psi, si, amp, a, f, ns)
+            integer, intent(in) :: ns !number of samples
+            integer :: i, si
             real(kind=8), intent(in) :: a, amp, f
-            real(kind=8), dimension(-ns/2:ns/2) :: Psi
+            real(kind=8), dimension(-ns/2 + 1:ns/2) :: Psi
+            si = -ns/2 + 1
             
-            do i = -ns/2, ns/2
+            do i = si, si + ns - 1
                 Psi(i) = amp*(1 - 2*(pi*a*i)**2)*exp(-(pi*f*i)**2)
             end do            
-        end function
+        end subroutine
 
-        function conv(x, h, nx, nh, sx, sh) result(y)
-            integer, intent(in) :: nx, nh, sx, sh
-            real(kind=8), dimension(sx:sx + nx - 1), intent(in) :: x
-            real(kind=8), dimension(sh:sh + nh - 1), intent(in) :: h
-            real(kind=8), dimension(0:nx + nh - 2) :: y
+        subroutine writeSignal(s, si, ns, file)
+            integer :: si, ns, i
+            real(kind=8), dimension(ns) :: s
+            character(*) :: file
 
-            integer :: i, j            
-
-        end function
+            open (1, file = file, status='old')
+            write(1,*) si
+            do i = 1, ns
+                write(1,'(F13.6)') s(i)
+            end do
+            close(1)
+        end subroutine
 
 end module seisDeconv

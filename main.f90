@@ -1,31 +1,24 @@
 program main
     use seisDeconv
     implicit none
-    integer :: ns = 1000, i
-    integer, dimension(:), allocatable :: Ref
+    integer, parameter :: ps = 500, rs = 1000
+    integer :: si
+    real(kind=8), dimension(:), allocatable :: Ref
     real(kind=8), dimension(:), allocatable :: Psi
 
-    allocate(Ref(ns))
+    allocate(Ref(rs))
     
-    Ref = genReflect(ns)
+    Ref = genReflect(rs)
 
-    open(1, file = 'reflect.data', status = 'old')
-    do i = 1, ns
-        write(1,'(I3)') Ref(i)
-    end do
-    close(1)
+    call writeSignal(Ref, 0, rs, 'reflect.data')
 
     deallocate(Ref)
 
-    allocate(Psi(ns))
+    allocate(Psi(ps))
 
-    Psi = genPulse(1.d0, 0.005d0, 1.d0/200.d0, ns)
+    call genPulse(Psi, si, 1.d0, 0.005d0, 1.d0/200.d0, ps)
 
-    open(1, file = 'pulse.data', status = 'old')
-    do i = 1, ns
-        write(1,'(F13.6)') Psi(i)
-    end do
-    close(1)
+    call writeSignal(Psi, si, ps, 'pulse.data')
 
     deallocate(Psi)
 
