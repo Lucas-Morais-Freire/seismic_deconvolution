@@ -1,7 +1,7 @@
 program main
     use seisDeconv
     implicit none
-    integer, parameter :: sp = 52, sr = 200
+    integer, parameter :: sp = 3, sr = 4
     integer :: zp, zx, zrd, zf, srd, sf
     real(kind=8), dimension(:), allocatable :: Ref
     real(kind=8), dimension(:), allocatable :: Psi
@@ -11,7 +11,9 @@ program main
 
     allocate(Ref(sr))
     
-    Ref = genReflect(sr)
+    !Ref = genReflect(sr)
+
+    Ref = (/1, 0, 0, 0/)
 
     call writeSignal(Ref, 1, sr, 'bins/reflect.data')
 
