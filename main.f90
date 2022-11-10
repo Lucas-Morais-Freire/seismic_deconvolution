@@ -1,19 +1,16 @@
 program main
     use seisDeconv
     implicit none
-    integer, parameter :: sp = 3, sr = 4
-    integer :: zp, zx, zrd, zf, srd, sf
+    integer, parameter :: sp = 50, sr = 1000
+    integer :: zp, zx, zf, sf
     real(kind=8), dimension(:), allocatable :: Ref
     real(kind=8), dimension(:), allocatable :: Psi
     real(kind=8), dimension(:), allocatable :: x
-    real(kind=8), dimension(:), allocatable :: rDec
     real(kind=8), dimension(:), allocatable :: f
 
     allocate(Ref(sr))
     
-    !Ref = genReflect(sr)
-
-    Ref = (/1, 0, 0, 0/)
+    Ref = genReflect(sr)
 
     call writeSignal(Ref, 1, sr, 'bins/reflect.data')
 
@@ -27,10 +24,11 @@ program main
 
     call writeSignal(x, zx, sp + sr - 1, 'bins/signal.data')
 
-    call deconv(x, psi, zx, zp, sp + sr - 1, sp, rDec, zrd, srd, f, zf, sf)
+    allocate(f(sp))
+
+    call deconv(Psi, zp, sp, f, zf, sf)
 
     deallocate(f)
-    deallocate(rDec)
     deallocate(Psi)
     deallocate(Ref)
     deallocate(x)

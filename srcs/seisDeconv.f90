@@ -134,12 +134,10 @@ module seisDeconv
             x = C(:, n + 1)
         end subroutine
 
-        subroutine deconv(x, s, zx, zs, sx, ss, ref, zr, sr, f, zf, sf)
-            integer :: zx, zs, sx, ss, zr, sr, zf, sf, i, j
-            real(kind=8), dimension(sx) :: x
+        subroutine deconv(s, zs, ss, f, zf, sf)
+            integer :: zs, ss, zf, sf, i, j
             real(kind=8), dimension(ss) :: s
-            real(kind=8), dimension(:), allocatable :: ref
-            real(kind=8), dimension(:), allocatable :: f
+            real(kind=8), dimension(ss) :: f
             real(kind=8), dimension(2*ss - 1, ss) :: A
             real(kind=8), dimension(ss, ss) :: B
             real(kind=8), dimension(ss) :: v
@@ -162,25 +160,10 @@ module seisDeconv
             end do
 
             B = matmul(transpose(A), A)
-
-            allocate(f(ss))
-
-            call printMat(B, ss, ss)
-            print*, v(1)
             
             call solveLSE(B, v, ss, f)
-
-            print*, f
-
+                
             sf = ss
-            sr = sx + sf - 1
-            zf = 1
-            
-            call writeSignal(f, 1, sf, 'bins/iFilter.data')
-            call writeSignal(x, zx, sx, 'bins/signal.data')
-            
-            call conv(x, f, zx, zf, sx, sf, ref, zr)
-
-            call writeSignal(ref, zr, sx + sf - 1, 'bins/deconv.data')
+            zf = zs
         end subroutine
 end module seisDeconv
