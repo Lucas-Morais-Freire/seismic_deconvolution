@@ -1,5 +1,5 @@
 FC = gfortran
-PC = python
+PC = python3
 FFLAGS = -O3 -Wall -Wextra -fopenmp
 MAIN = main.f90
 SRCS = seisDeconv.f90

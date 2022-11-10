@@ -2,8 +2,33 @@ module seisDeconv
     implicit none
     real(kind = 8) :: pi = 4.d0*atan(1.d0)
     !integer(kind = 1), private :: sp = 4, dp = 8
-
+    
     contains
+        subroutine initRandom()
+            integer :: n
+            integer,allocatable :: seed(:)
+
+            call random_seed(size=n)
+            allocate(seed(n))
+            seed = time()
+            call random_seed(put=seed)
+            deallocate(seed)
+        end subroutine
+
+
+        subroutine writeSignal(s, zi, ns, file)
+            integer :: zi, ns, i
+            real(kind=8), dimension(ns) :: s
+            character(*) :: file
+
+            open (1, file = file, status='old')
+            write(1,*) zi
+            do i = 1, ns
+                write(1,'(F13.6)') s(i)
+            end do
+            close(1)
+        end subroutine
+
         subroutine printMat(A, n, m)
             integer, intent(in) :: n, m
             real(kind=8), dimension(n,m), intent(in) :: A
@@ -16,8 +41,25 @@ module seisDeconv
                 write(*,*)
             end do
             write(*,*)
-            
         end subroutine printMat
+
+        function randGauss(sDev, mean) result(y)
+            real(kind=8), intent(in) :: sDev, mean
+            real(kind=8) :: y, u1, u2, w = 1.d0, mult
+            real(kind=8), save :: x1, x2
+            logical, save :: called = .false.
+
+            if (called) then
+                called = .not.called
+                y = x2
+                return
+            end if
+
+            do while (w >= 1.d0 .or. w == 0.d0)
+                call random_number(u1)
+            end do
+
+        end function
 
         function genReflect(ns) result(Ref)
             implicit none
@@ -51,18 +93,6 @@ module seisDeconv
             end do            
         end subroutine
 
-        subroutine writeSignal(s, zi, ns, file)
-            integer :: zi, ns, i
-            real(kind=8), dimension(ns) :: s
-            character(*) :: file
-
-            open (1, file = file, status='old')
-            write(1,*) zi
-            do i = 1, ns
-                write(1,'(F13.6)') s(i)
-            end do
-            close(1)
-        end subroutine
 
         subroutine conv(x, h, zx, zh, sx, sh, y, zy)
             integer :: zx, zh, sx, sh, sy, zy, i, j
