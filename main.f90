@@ -1,7 +1,7 @@
 program main
     use seisDeconv
     implicit none
-    integer, parameter :: sp = 50, sr = 1000
+    integer, parameter :: sp = 51, sr = 1000
     integer :: zp, zx, zf, sf, zd, zc
     real(kind=8), dimension(:), allocatable :: Ref
     real(kind=8), dimension(:), allocatable :: Psi

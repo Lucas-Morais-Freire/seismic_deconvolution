@@ -4,7 +4,7 @@ f = open("bins/reflect.data", "r")
 data = (f.read()).split()
 y = [float(data[1:][i]) for i in range(len(data[1:]))]
 x = [i for i in range(-int(data[0]) + 1, -int(data[0]) + len(data[1:]) + 1)]
-plt.stem(x, y)
+plt.plot(x, y)
 plt.title("Refletividade aleatória")
 plt.savefig("pics/reflect.png")
 plt.show()
