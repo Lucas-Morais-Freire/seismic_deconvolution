@@ -1,0 +1,40 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Fortran Launch (GDB)",
+            "type": "cppdbg",
+            "request": "launch",
+            "targetArchitecture": "x86",
+            "program": "/home/lucasmf/Documents/seismic_deconvolution/teste.exe",
+            "miDebuggerPath": "gdb.exe",
+            "args": [],
+            "stopAtEntry": false,
+            "cwd": "/home/lucasmf/Documents/seismic_deconvolution",
+            "externalConsole": true,
+            "preLaunchTask": "gfortran"
+        },
+        {
+            "name": "(gdb) Fortran",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "/home/lucasmf/Documents/seismic_deconvolution/teste.exe",
+            "args": [], // Possible input args for a.out
+            "stopAtEntry": false,
+            "cwd": "/home/lucasmf/Documents/seismic_deconvolution",
+            "environment": [],
+            "externalConsole": false,
+            "MIMode": "gdb",
+            "setupCommands": [
+            {
+                "description": "Enable pretty-printing for gdb",
+                "text": "-enable-pretty-printing",
+                "ignoreFailures": true
+            }
+            ]
+        }
+    ]
+  }

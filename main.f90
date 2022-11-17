@@ -1,5 +1,6 @@
 program main
     use seisDeconv
+    use omp_lib
     implicit none
     integer, parameter :: sp = 51, sr = 1000
     integer :: zp, zx, zf, sf, zd, zc
@@ -9,6 +10,8 @@ program main
     real(kind=8), dimension(:), allocatable :: f
     real(kind=8), dimension(:), allocatable :: deconvRef
     real(kind=8), dimension(:), allocatable :: scf
+
+    call omp_set_num_threads(4)
 
     call initRandom()
 
@@ -30,7 +33,7 @@ program main
 
     allocate(f(sp))
 
-    call deconv(Psi, zp, sp, f, zf, sf)
+    call inverseFilter(Psi, zp, sp, f, zf, sf)
 
     call writeSignal(f, zf, sf, 'bins/iFilter.data')
 
@@ -42,9 +45,11 @@ program main
 
     call writeSignal(scf, zc, sp + sf - 1, 'bins/scf.data')
 
-    deallocate(f)
-    deallocate(Psi)
     deallocate(Ref)
+    deallocate(Psi)
     deallocate(x)
+    deallocate(f)
+    deallocate(deconvRef)
+    deallocate(scf)
 
 end program main

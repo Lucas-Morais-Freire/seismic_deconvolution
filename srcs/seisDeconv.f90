@@ -97,13 +97,17 @@ module seisDeconv
 
             allocate(y(sy))
 
-            do i = 1, sy
-                pSum = 0
-                do j = max(1, -sh + i + 1), min(sx, i)
-                    pSum = pSum + x(j)*h(i - j + 1)
-                end do
-                y(i) = pSum
-            end do
+            !!$omp parallel default(none) shared(sy, sh, sx, x, h, y) private(i, j, pSum)
+            !    !$omp do schedule(dynamic)
+                    do i = 1, sy
+                        pSum = 0
+                        do j = max(1, -sh + i + 1), min(sx, i)
+                            pSum = pSum + x(j)*h(i - j + 1)
+                        end do
+                        y(i) = pSum
+                    end do
+            !    !$omp end do
+            !!$omp end parallel
 
             zy = zx + zh - 1
         end subroutine
@@ -156,7 +160,7 @@ module seisDeconv
             x = C(:, n + 1)
         end subroutine
 
-        subroutine deconv(s, zs, ss, f, zf, sf)
+        subroutine inverseFilter(s, zs, ss, f, zf, sf)
             integer :: zs, ss, zf, sf, i, j
             real(kind=8), dimension(ss) :: s
             real(kind=8), dimension(ss) :: f

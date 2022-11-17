@@ -1,31 +1,29 @@
 program teste
     use seisDeconv
+    use omp_lib
     implicit none
 
-    real(kind=8), allocatable :: samples(:)
-    real(kind=8), allocatable :: f(:)
-    real(kind=8), allocatable :: scf(:)
-    integer :: zs, ns = 51 , zf, nf = 51, zc
+    integer :: n = 100000, zy
+    real(kind=8), allocatable :: x(:), h(:), y(:)
+    real(kind=8) :: start, finish
+
+    call omp_set_num_threads(2)
 
     call initRandom()
 
-    allocate(samples(ns))
+    allocate(x(n))
+    allocate(h(n))
 
-    call genPulse(samples, zs, 1.d0, 0.03d0, 1.d0/20.d0, ns)
+    x = genReflect(n, 2.5d0, 0.d0)
+    h = genReflect(n, 2.5d0, 0.d0)
 
-    call writeSignal(samples, zs, ns, 'bins/pulse.data')
+    start = omp_get_wtime()
+    call conv(x, h, 1, 1, n, n, y, zy)
+    finish = omp_get_wtime()
 
-    allocate(f(nf))
+    deallocate(x)
+    deallocate(h)
+    deallocate(y)
 
-    call deconv(samples, zs, ns, f, zf, nf)
-
-    call writeSignal(f, zf, nf, 'bins/iFilter.data')
-
-    call conv(samples, f, zs, zf, ns, nf, scf, zc)
-
-    call writeSignal(scf, zc, ns + nf - 1, 'bins/scf.data')
-
-    deallocate(samples)
-    deallocate(f)
-
+    print*, finish - start
 end program
