@@ -6,7 +6,7 @@ module seisDeconv
     contains
         subroutine initRandom()
             integer :: n
-            integer,allocatable :: seed(:)
+            integer, allocatable :: seed(:)
 
             call random_seed(size=n)
             allocate(seed(n))
@@ -14,7 +14,6 @@ module seisDeconv
             call random_seed(put=seed)
             deallocate(seed)
         end subroutine
-
 
         subroutine writeSignal(s, zi, ns, file)
             integer :: zi, ns, i
@@ -24,7 +23,7 @@ module seisDeconv
             open (1, file = file, status='old')
             write(1,*) zi
             do i = 1, ns
-                write(1,'(F13.6)') s(i)
+                write(1,'(F25.15)') s(i)
             end do
             close(1)
         end subroutine
@@ -45,40 +44,26 @@ module seisDeconv
 
         function randGauss(sDev, mean) result(y)
             real(kind=8), intent(in) :: sDev, mean
-            real(kind=8) :: y, u1, u2, w = 1.d0, mult
-            real(kind=8), save :: x1, x2
-            logical, save :: called = .false.
+            real(kind=8) :: y, u1, u2
 
-            if (called) then
-                called = .not.called
-                y = x2
-                return
-            end if
+            call random_number(u1)
+            u1 = 1.d0 - u1
+            call random_number(u2)
+            u2 = 1.d0 - u2
 
-            do while (w >= 1.d0 .or. w == 0.d0)
-                call random_number(u1)
-            end do
+            y = sDev*sqrt(-2*log(u1))*cos(2*pi*u2) + mean
 
         end function
 
-        function genReflect(ns) result(Ref)
-            implicit none
+        function genReflect(ns, sDev, mean) result(Ref)
             integer, intent(in) :: ns
-            integer :: i, seed
+            real(kind=8), intent(in) :: sDev, mean
+            integer :: i
             real(kind=8), dimension(ns) :: Ref
             !real :: f
 
-            seed = time()
-            call srand(seed)
-
             do i = 1, ns
-                Ref(i) = 0.d0
-            end do
-            
-            i = mod(irand(), 20)
-            do while (i <= ns)
-                Ref(i) = real(mod(irand(), 100) - 50, kind=8)
-                i = i + mod(irand(), 100) - 50 + 100
+                Ref(i) = randGauss(sDev, mean)
             end do
         end function genReflect
 
@@ -171,16 +156,14 @@ module seisDeconv
             real(kind=8), dimension(2*ss - 1, ss) :: A
             real(kind=8), dimension(ss, ss) :: B
             real(kind=8), dimension(ss) :: v
-            real(kind=8) :: temp
 
             do i = 1, 2*ss - 1
                 do j = 1, ss
                     if (i < j .or. j <= i - ss) then
-                        temp = 0
+                        A(i, j) = 0
                     else
-                        temp = s(i - j + 1)
+                        A(i, j) = s(i - j + 1)
                     end if
-                    A(i, j) = temp
                 end do
             end do
 

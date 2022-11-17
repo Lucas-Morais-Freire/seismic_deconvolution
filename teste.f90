@@ -3,27 +3,24 @@ program teste
     implicit none
 
     real(kind=8), allocatable :: samples(:)
-    integer zs, ss, i
-    real(kind=8) :: r
+    real(kind=8), allocatable :: f(:)
+    integer :: zs, ns = 3, zf, nf = 3
 
     call initRandom()
 
-    allocate(samples(401))
+    allocate(samples(ns))
 
-    samples = 0
-    zs = 201
-    ss = 401
+    call genPulse(samples, zs, 1.d0, 0.03d0, 1.d0/20.d0, ns)
 
-    do i = 0, 100000
-        r = randGauss(50.d0, 201.d0)
-        if (r < 1.d0) then
-            r = 1.d0
-        else if (r > 401) then
-            r = 401.d0
-        end if
-        samples(floor(r)) = samples(floor(r)) + 1
-    end do
+    call writeSignal(samples, zs, ns, 'bins/pulse.data')
 
-    call writeSignal(samples, 0, ss, 'bins/signal.data')
+    allocate(f(nf))
+
+    call deconv(samples, zs, ns, f, zf, nf)
+
+    call writeSignal(f, zf, nf, 'bins/iFilter.data')
+
+    deallocate(samples)
+    deallocate(f)
 
 end program

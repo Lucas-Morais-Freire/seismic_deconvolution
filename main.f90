@@ -2,15 +2,19 @@ program main
     use seisDeconv
     implicit none
     integer, parameter :: sp = 50, sr = 1000
-    integer :: zp, zx, zf, sf
+    integer :: zp, zx, zf, sf, zd, zc
     real(kind=8), dimension(:), allocatable :: Ref
     real(kind=8), dimension(:), allocatable :: Psi
     real(kind=8), dimension(:), allocatable :: x
     real(kind=8), dimension(:), allocatable :: f
+    real(kind=8), dimension(:), allocatable :: deconvRef
+    real(kind=8), dimension(:), allocatable :: scf
+
+    call initRandom()
 
     allocate(Ref(sr))
     
-    Ref = genReflect(sr)
+    Ref = genReflect(sr, 25.d0, 0.d0)
 
     call writeSignal(Ref, 1, sr, 'bins/reflect.data')
 
@@ -27,6 +31,16 @@ program main
     allocate(f(sp))
 
     call deconv(Psi, zp, sp, f, zf, sf)
+
+    call writeSignal(f, zf, sf, 'bins/iFilter.data')
+
+    call conv(x, f, zx, zf, sp + sr - 1, sf, deconvRef, zd)
+
+    call writeSignal(deconvRef, zd, sp + sr - 2 + sf, 'bins/deconv.data')
+
+    call conv(psi, f, zp, zf, sp, sf, scf, zc)
+
+    call writeSignal(scf, zc, sp + sf - 1, 'bins/scf.data')
 
     deallocate(f)
     deallocate(Psi)

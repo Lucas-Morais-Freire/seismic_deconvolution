@@ -1,7 +1,7 @@
 FC = gfortran
-PC = python3
+PC = python
 FFLAGS = -O3 -Wall -Wextra -fopenmp
-MAIN = main.f90
+MAIN = teste.f90
 SRCS = seisDeconv.f90
 SRCDIR = srcs
 PLOT = plot.py
@@ -15,7 +15,7 @@ ${BIN}: ${MAIN} ${SRCDIR}/${SRCS}
 run: ${BIN}
 	@./${BIN}
 
-plot:
+plotAll:
 	@${PC} ${PLOT}
 
 random: run
