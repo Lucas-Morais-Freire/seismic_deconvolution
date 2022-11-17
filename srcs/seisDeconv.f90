@@ -65,6 +65,13 @@ module seisDeconv
             do i = 1, ns
                 Ref(i) = randGauss(sDev, mean)
             end do
+
+            i = mod(irand(), 20)
+            do while (i <= ns)
+                Ref(i) = real(mod(irand(), 100) - 50, kind=8)
+                i = i + mod(irand(), 100) - 50 + 100
+            end do
+
         end function genReflect
 
         subroutine genPulse(Psi, zi, amp, a, f, ns)
@@ -156,6 +163,7 @@ module seisDeconv
             real(kind=8), dimension(2*ss - 1, ss) :: A
             real(kind=8), dimension(ss, ss) :: B
             real(kind=8), dimension(ss) :: v
+            real(kind=8), dimension(2*ss - 1) :: d
 
             do i = 1, 2*ss - 1
                 do j = 1, ss
@@ -167,10 +175,11 @@ module seisDeconv
                 end do
             end do
 
-            v(1) = s(1)
-            do i = 2, ss
-                v(i) = 0.d0
-            end do
+            d = 0.d0
+
+            d(2*zs - 1) = 1.d0
+
+            v = matmul(transpose(A), d)
 
             B = matmul(transpose(A), A)
             

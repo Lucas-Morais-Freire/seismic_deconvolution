@@ -4,7 +4,8 @@ program teste
 
     real(kind=8), allocatable :: samples(:)
     real(kind=8), allocatable :: f(:)
-    integer :: zs, ns = 3, zf, nf = 3
+    real(kind=8), allocatable :: scf(:)
+    integer :: zs, ns = 51 , zf, nf = 51, zc
 
     call initRandom()
 
@@ -19,6 +20,10 @@ program teste
     call deconv(samples, zs, ns, f, zf, nf)
 
     call writeSignal(f, zf, nf, 'bins/iFilter.data')
+
+    call conv(samples, f, zs, zf, ns, nf, scf, zc)
+
+    call writeSignal(scf, zc, ns + nf - 1, 'bins/scf.data')
 
     deallocate(samples)
     deallocate(f)

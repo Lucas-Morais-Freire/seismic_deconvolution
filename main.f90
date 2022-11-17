@@ -14,7 +14,7 @@ program main
 
     allocate(Ref(sr))
     
-    Ref = genReflect(sr, 25.d0, 0.d0)
+    Ref = genReflect(sr, 2.5d0, 0.d0)
 
     call writeSignal(Ref, 1, sr, 'bins/reflect.data')
 
