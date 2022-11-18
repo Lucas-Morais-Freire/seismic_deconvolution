@@ -1,7 +1,7 @@
 FC = gfortran
-PC = python3
+PC = python
 FFLAGS = -O3 -Wall -Wextra -fopenmp
-MAIN = teste.f90
+MAIN = main.f90
 SRCS = seisDeconv.f90
 SRCDIR = srcs
 PLOT = plot.py
@@ -13,7 +13,7 @@ ${BIN}: ${MAIN} ${SRCDIR}/${SRCS}
 	${FC} ${FFLAGS} ${SRCDIR}/${SRCS} ${MAIN} -o ${BIN}
 
 run: ${BIN}
-	@./${BIN}
+	@.\${BIN}
 
 plot:
 	@${PC} ${PLOT}
