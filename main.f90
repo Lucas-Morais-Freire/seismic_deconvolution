@@ -2,8 +2,9 @@ program main
     use seisDeconv
     use omp_lib
     implicit none
-    integer, parameter :: sp = 51, sr = 1000
+    integer, parameter :: sp = 51, sr = 1000000
     integer :: zp, zx, zf, sf, zd, zc
+    real(kind=8) :: start, finish
     real(kind=8), dimension(:), allocatable :: Ref
     real(kind=8), dimension(:), allocatable :: Psi
     real(kind=8), dimension(:), allocatable :: x
@@ -16,18 +17,21 @@ program main
     call initRandom()
 
     allocate(Ref(sr))
+
     
     Ref = genReflect(sr, 2.5d0, 0.d0)
-
+    
     call writeSignal(Ref, 1, sr, 'bins/reflect.data')
-
+    
     allocate(Psi(sp))
-
+    
     call genPulse(Psi, zp, 1.d0, 0.03d0, 1.d0/20.d0, sp)
-
+    
     call writeSignal(Psi, zp, sp, 'bins/pulse.data')
-
+    
+    start = omp_get_wtime()
     call conv(Psi, Ref, zp, 1, sp, sr, x, zx)
+    finish = omp_get_wtime()
 
     call writeSignal(x, zx, sp + sr - 1, 'bins/signal.data')
 
@@ -44,6 +48,9 @@ program main
     call conv(psi, f, zp, zf, sp, sf, scf, zc)
 
     call writeSignal(scf, zc, sp + sf - 1, 'bins/scf.data')
+
+
+    write(*, '(F25.13)') finish-start
 
     deallocate(Ref)
     deallocate(Psi)

@@ -3,27 +3,30 @@ program teste
     use omp_lib
     implicit none
 
-    integer :: n = 100000, zy
+    integer :: nx, nh = 1000000, zy
     real(kind=8), allocatable :: x(:), h(:), y(:)
     real(kind=8) :: start, finish
 
-    call omp_set_num_threads(2)
+    nx = 51
+
+    call omp_set_num_threads(4)
 
     call initRandom()
-
-    allocate(x(n))
-    allocate(h(n))
-
-    x = genReflect(n, 2.5d0, 0.d0)
-    h = genReflect(n, 2.5d0, 0.d0)
+    
+    allocate(x(nx))
+    allocate(h(nh))
+    
+    x = genReflect(nx, 2.5d0, 0.d0)
+    h = genReflect(nh, 2.5d0, 0.d0)
 
     start = omp_get_wtime()
-    call conv(x, h, 1, 1, n, n, y, zy)
+    call conv(x, h, 1, 1, nx, nh, y, zy)
     finish = omp_get_wtime()
+
+    deallocate(y)
 
     deallocate(x)
     deallocate(h)
-    deallocate(y)
 
-    print*, finish - start
+    write(*,'(F25.13)') finish - start
 end program

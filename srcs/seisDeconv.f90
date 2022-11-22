@@ -1,7 +1,7 @@
 module seisDeconv
+    use omp_lib
     implicit none
     real(kind = 8) :: pi = 4.d0*atan(1.d0)
-    !integer(kind = 1), private :: sp = 4, dp = 8
     
     contains
         subroutine initRandom()
@@ -87,27 +87,33 @@ module seisDeconv
 
 
         subroutine conv(x, h, zx, zh, sx, sh, y, zy)
-            integer :: zx, zh, sx, sh, sy, zy, i, j
+            integer :: zx, zh, sx, sh, sy, zy, i, j, csize
             real(kind = 8), dimension(sx) :: x
             real(kind = 8), dimension(sh) :: h
             real(kind = 8), dimension(:), allocatable :: y
             real(kind = 8) :: pSum
 
             sy = sx + sh - 1
-
+            
             allocate(y(sy))
 
-            !!$omp parallel default(none) shared(sy, sh, sx, x, h, y) private(i, j, pSum)
-            !    !$omp do schedule(dynamic)
-                    do i = 1, sy
-                        pSum = 0
-                        do j = max(1, -sh + i + 1), min(sx, i)
-                            pSum = pSum + x(j)*h(i - j + 1)
-                        end do
-                        y(i) = pSum
+            !$omp parallel default(none) shared(sy, sh, sx, x, h, y) private(i, j, pSum)
+
+            !$omp single
+                print*, omp_get_num_thre
+            !$omp end single
+
+
+            !$omp do schedule(dynamic, 8)
+                do i = 1, sy
+                    pSum = 0
+                    do j = max(1, -sh + i + 1), min(sx, i)
+                        pSum = pSum + x(j)*h(i - j + 1)
                     end do
-            !    !$omp end do
-            !!$omp end parallel
+                    y(i) = pSum
+                end do
+            !$omp end do
+            !$omp end parallel
 
             zy = zx + zh - 1
         end subroutine
