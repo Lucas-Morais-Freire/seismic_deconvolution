@@ -3,11 +3,11 @@ program teste
     use omp_lib
     implicit none
 
-    integer :: nx, nh = 1000000, zy
+    integer :: nx, nh = 25000, zy
     real(kind=8), allocatable :: x(:), h(:), y(:)
     real(kind=8) :: start, finish
 
-    nx = 51
+    nx = 25000
 
     call omp_set_num_threads(4)
 

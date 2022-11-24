@@ -1,4 +1,5 @@
 module seisDeconv
+    use omp_lib
     implicit none
     real(kind = 8) :: pi = 4.d0*atan(1.d0)
     
@@ -84,7 +85,6 @@ module seisDeconv
             end do            
         end subroutine
 
-
         subroutine conv(x, h, zx, zh, sx, sh, y, zy)
             integer :: zx, zh, sx, sh, sy, zy, i, j
             real(kind = 8), dimension(sx) :: x
@@ -96,13 +96,15 @@ module seisDeconv
             
             allocate(y(sy))
 
-            do i = 1, sy
-                pSum = 0
-                do j = max(1, -sh + i + 1), min(sx, i)
-                    pSum = pSum + x(j)*h(i - j + 1)
+            !$omp parallel do schedule(static, 8) default(none) shared(y, sy, sh, sx, x, h) private(i, j, pSum)
+                do i = 1, sy
+                    pSum = 0
+                    do j = max(1, -sh + i + 1), min(sx, i)
+                        pSum = pSum + x(j)*h(i - j + 1)
+                    end do
+                    y(i) = pSum
                 end do
-                y(i) = pSum
-            end do
+            !$omp end parallel do
 
             zy = zx + zh - 1
         end subroutine
