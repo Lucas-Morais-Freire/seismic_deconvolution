@@ -17,9 +17,10 @@ module seisDeconv
 
         ! writes a signal to a file
         subroutine writeSignal(s, zi, ns, file)
-            integer :: zi, ns, i
-            real(kind=8), dimension(ns) :: s
-            character(*) :: file
+            integer, intent(in) :: zi, ns
+            real(kind=8), dimension(ns), intent(in) :: s
+            character(*), intent(in) :: file
+            integer :: i
 
             open (1, file = file, status='replace', action='write')
             write(1,*) zi
