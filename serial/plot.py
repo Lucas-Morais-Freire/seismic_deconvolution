@@ -11,13 +11,13 @@ plt.show()
 f.close()
 
 plt.clf()
-f = open("bins/pulse.data", "r")
+f = open("bins/source.data", "r")
 data = (f.read()).split()
 y = [float(data[1:][i]) for i in range(len(data[1:]))]
 x = [i for i in range(-int(data[0]) + 1, -int(data[0]) + len(data[1:]) + 1)]
 plt.plot(x, y)
 plt.title("Pulso de Ricker")
-plt.savefig("pics/pulse.png")
+plt.savefig("pics/source.png")
 plt.show()
 f.close()
 
@@ -44,23 +44,23 @@ plt.show()
 f.close()
 
 plt.clf()
-f = open("bins/iFilter.data", "r")
+f = open("bins/inv_filter.data", "r")
 data = (f.read()).split()
 y = [float(data[1:][i]) for i in range(len(data[1:]))]
 x = [i for i in range(-int(data[0]) + 1, -int(data[0]) + len(data[1:]) + 1)]
 plt.plot(x, y)
 plt.title("Filtro inverso")
-plt.savefig("pics/iFilter.png")
+plt.savefig("pics/inv_filter.png")
 plt.show()
 f.close()
 
 plt.clf()
-f = open("bins/scf.data", "r")
+f = open("bins/pulse.data", "r")
 data = (f.read()).split()
 y = [float(data[1:][i]) for i in range(len(data[1:]))]
 x = [i for i in range(-int(data[0]) + 1, -int(data[0]) + len(data[1:]) + 1)]
 plt.plot(x, y)
 plt.title("pulso*filtro inverso")
-plt.savefig("pics/scf.png")
+plt.savefig("pics/pulse.png")
 plt.show()
 f.close()

@@ -1,22 +1,24 @@
 FC = gfortran
 PC = python3
-FFLAGS = -O3 -Wall -Wextra -fopenmp
-MAIN = main.f90
-SRCS = seisDeconv.f90
-SRCDIR = srcs
+FFLAGS = -Wall -Wextra -g # -O3
+SRCS = srcs/seisDeconv.f90 main.f90 
 PLOT = plot.py
-BIN = ${MAIN:.f90=.exe}
+TARGET = main.exe
+INCLUDE_PATHS = srcs
 
-compile: ${BIN}
+OBJS = $(patsubst %.f90,%.o,$(SRCS))
+INCLUDE_FLAGS = $(patsubst %,-I%,$(INCLUDE_PATHS))
 
-${BIN}: ${MAIN} ${SRCDIR}/${SRCS}
-	${FC} ${FFLAGS} ${SRCDIR}/${SRCS} ${MAIN} -o ${BIN}
+# test:
+# 	@echo $(MODS)
 
-run: ${BIN}
-	@./${BIN}
+all: $(TARGET)
 
-plot:
-	@${PC} ${PLOT}
+$(TARGET): $(OBJS)
+	$(FC) $(FFLAGS) $(OBJS) -o $(TARGET) $(INCLUDE_FLAGS)
 
-random: run
-	@${PC} ${PLOT}
+%.o: %.f90
+	$(FC) $(FFLAGS) -c $^ -o $@ $(INCLUDE_FLAGS)
+
+clean:
+	rm -f $(TARGET) $(OBJS)

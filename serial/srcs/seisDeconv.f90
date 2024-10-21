@@ -21,7 +21,7 @@ module seisDeconv
             real(kind=8), dimension(ns) :: s
             character(*) :: file
 
-            open (1, file = file, status='old')
+            open (1, file = file, status='replace', action='write')
             write(1,*) zi
             do i = 1, ns
                 write(1,'(F25.15)') s(i)
@@ -102,12 +102,14 @@ module seisDeconv
             real(kind = 8), dimension(nsh), intent(in) :: h
             
             integer, intent(out) :: zy   ! position of t = 0 for output signal
-            integer, intent(out) :: nsy
-            real(kind = 8), dimension(nsx + nsh - 1), intent(out) :: y
+            integer, intent(out) :: nsy  ! number of samples of y
+            real(kind = 8), dimension(:), allocatable, intent(out) :: y ! output of the convolution
 
             integer :: i, j        ! iterators
             real(kind = 8) :: pSum ! holds partial sum for convolution
-        
+            
+            allocate(y(nsx + nsh - 1))
+
             nsy = nsx + nsh - 1
             do i = 1, nsy
                 pSum = 0
@@ -130,7 +132,7 @@ module seisDeconv
             real(kind=8), dimension(n + 1) :: aux          ! holds a line from the augmented matrix C for processing
             integer :: i, j                                ! iterators
 
-            C(:, 1:n) = A ! fill left side with A  (C = [A:-])
+            C(:, 1:n) = A ! fill left side with A  (C = [A:--])
             C(:, n+1) = b ! fill right side with b (C = [A:b])
             
             ! solving the LSE via gaussian elimination
@@ -173,36 +175,48 @@ module seisDeconv
             x = C(:, n + 1)
         end subroutine
 
-        subroutine inverseFilter(s, zs, ss, f, zf, sf)
-            integer :: zs, ss, zf, sf, i, j
-            real(kind=8), dimension(ss) :: s
-            real(kind=8), dimension(ss) :: f
-            real(kind=8), dimension(2*ss - 1, ss) :: A
-            real(kind=8), dimension(ss, ss) :: B
-            real(kind=8), dimension(ss) :: v
-            real(kind=8), dimension(2*ss - 1) :: d
-
-            do i = 1, 2*ss - 1
-                do j = 1, ss
-                    if (i < j .or. j <= i - ss) then
+        ! computes the inverse filter given source signature
+        subroutine inverseFilter(s, zs, nss, f, zf, nsf)
+            real(kind=8), dimension(nss), intent(in) :: s ! input source signature
+            integer, intent(in) :: zs                     ! position of t = 0 in source signature
+            integer, intent(in) :: nss                    ! number of samples of source signature
+            
+            real(kind=8), dimension(nss), intent(out) :: f ! output filter
+            integer, intent(out) :: zf                     ! position of t = 0 in output filter
+            integer, intent(out) :: nsf                    ! number of samples in output filter
+            
+            real(kind=8), dimension(2*nss - 1, nss) :: A ! convolution matrix
+            real(kind=8), dimension(nss, nss) :: B       ! (A^T)*A
+            real(kind=8), dimension(nss) :: v            ! (A^T)*d
+            real(kind=8), dimension(2*nss - 1) :: d      ! kronecker delta at 2*zs - 1
+            integer :: i, j                              ! iterators
+            
+            ! fill convolution matrix
+            do i = 1, 2*nss - 1
+                do j = 1, nss
+                    if (i < j .or. j <= i - nss) then
                         A(i, j) = 0
                     else
                         A(i, j) = s(i - j + 1)
                     end if
                 end do
             end do
-
-            d = 0.d0
-
-            d(2*zs - 1) = 1.d0
-
-            v = matmul(transpose(A), d)
-
-            B = matmul(transpose(A), A)
             
-            call solveLSE(B, v, ss, f)
+            ! construct kronecker delta
+            d = 0.d0
+            d(2*zs - 1) = 1.d0 ! the position of the spike will be at 2*zs - 1 because both s and f have the zero at zs.
+            
+            ! given e : reflectivity, s : source signature, x : observed signal, f : inverse filter
+            ! conv(s, e) = x => conv(f, s, e) = conv(f, x) => e = conv(f, x)
+            ! conv(f, s) = d => A*f = d => (A^T)*A*f = (A^T)*d => B*f = v
+
+            v = matmul(transpose(A), d) ! v = (A^T)*d
+
+            B = matmul(transpose(A), A) ! B = (A^T)*A
+            
+            call solveLSE(B, v, nss, f)  ! solve for f.
                 
-            sf = ss
+            nsf = nss
             zf = zs
         end subroutine
 end module seisDeconv

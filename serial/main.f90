@@ -1,52 +1,60 @@
 program main
     use seisDeconv
     implicit none
-    integer, parameter :: sp = 51, sr = 1000
-    integer :: zp, zx, zf, sf, zd, zc
-    real(kind=8), dimension(:), allocatable :: Ref
-    real(kind=8), dimension(:), allocatable :: Psi
+    integer, parameter :: nss = 51, nsr = 1000 ! number of samples of source and reflectivity
+    integer :: zs  ! position of t = 0 in source
+    integer :: nsx ! number of samples of trace
+    integer :: zx  ! position of t = 0 in trace
+    integer :: nsf ! number of samples of inverse filter
+    integer :: zf  ! position of t = 0 in inverse filter
+    integer :: nsd ! number of samples of deconvolved trace
+    integer :: zd  ! position of t = 0 in deconvolved trace
+    integer :: nsp ! number of samples of approximate unit pulse
+    integer :: zp  ! position of t = 0 in approximate unit pulse
+    real(kind=8), dimension(:), allocatable :: e
+    real(kind=8), dimension(:), allocatable :: s
     real(kind=8), dimension(:), allocatable :: x
     real(kind=8), dimension(:), allocatable :: f
-    real(kind=8), dimension(:), allocatable :: deconvRef
-    real(kind=8), dimension(:), allocatable :: scf
+    real(kind=8), dimension(:), allocatable :: dec_e
+    real(kind=8), dimension(:), allocatable :: p
 
-    call initRandom()
+    call initRandom()  ! initialize RNG
 
-    allocate(Ref(sr))
+    allocate(e(nsr))
     
-    Ref = genReflect(sr, 2.5d0, 0.d0)
+    e = genReflect(nsr, 2.5d0, 0.d0) ! generate random reflectivity e
     
-    call writeSignal(Ref, 1, sr, 'bins/reflect.data')
+    call writeSignal(e, 1, nsr, 'bins/reflect.data') ! write e
     
-    allocate(Psi(sp))
+    allocate(s(nss))
     
-    call genPulse(Psi, zp, 1.d0, 0.03d0, 1.d0/20.d0, sp)
+    call genPulse(s, zs, 1.d0, 0.03d0, 1.d0/20.d0, nss) ! generate source signature s (ricker)
     
-    call writeSignal(Psi, zp, sp, 'bins/pulse.data')
+    call writeSignal(s, zs, nss, 'bins/source.data') ! write s
     
-    call conv(Psi, Ref, zp, 1, sp, sr, x, zx)
+    call conv(s, e, zs, 1, nss, nsr, x, zx, nsx)  ! generate trace x by convolving pulse with reflectivity
 
-    call writeSignal(x, zx, sp + sr - 1, 'bins/signal.data')
+    call writeSignal(x, zx, nsx, 'bins/signal.data')  ! write x
 
-    allocate(f(sp))
+    allocate(f(nss))
 
-    call inverseFilter(Psi, zp, sp, f, zf, sf)
+    call inverseFilter(s, zs, nss, f, zf, nsf)      ! compute inverse filter f
 
-    call writeSignal(f, zf, sf, 'bins/iFilter.data')
+    call writeSignal(f, zf, nsf, 'bins/inv_filter.data') ! write f
 
-    call conv(x, f, zx, zf, sp + sr - 1, sf, deconvRef, zd)
+    call conv(x, f, zx, zf, nsx, nsf, dec_e, zd, nsd) ! convolve inverse filter with trace to get reflectivity dec_e
 
-    call writeSignal(deconvRef, zd, sp + sr - 2 + sf, 'bins/deconv.data')
+    call writeSignal(dec_e, zd, nsd, 'bins/deconv.data') ! write dec_e
 
-    call conv(psi, f, zp, zf, sp, sf, scf, zc)
+    call conv(s, f, zs, zf, nss, nsf, p, zp, nsp) ! convolve inverse filter with signature to get an unit pulse p
 
-    call writeSignal(scf, zc, sp + sf - 1, 'bins/scf.data')
+    call writeSignal(p, zp, nsp, 'bins/pulse.data') ! write pulse p
 
-    deallocate(Ref)
-    deallocate(Psi)
+    deallocate(e)
+    deallocate(s)
     deallocate(x)
     deallocate(f)
-    deallocate(deconvRef)
-    deallocate(scf)
+    deallocate(dec_e)
+    deallocate(p)
 
 end program main
