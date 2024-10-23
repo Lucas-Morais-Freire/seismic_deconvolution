@@ -50,7 +50,7 @@ module seisDeconv
             real(kind=8), intent(in) :: sDev, mean
 
             real(kind=8), intent(out) :: y
-            
+
             real(kind=8) :: u1, u2
 
             call random_number(u1)
@@ -61,19 +61,32 @@ module seisDeconv
             y = sDev*sqrt(-2*log(u1))*cos(2*pi*u2) + mean
 
         end subroutine
+
+        subroutine addNoise(x, nsx, mean, sDev)
+            integer, intent(in) ::  nsx
+            real(kind=8), intent(in) :: mean, sDev
+            
+            real(kind=8), dimension(nsx), intent(inout) :: x
+
+            integer :: i
+            real(kind=8) :: aux
+        
+            do i = 1, nsx
+                call randGauss(sDev, mean, aux)
+                x(i) = x(i) + aux
+            end do
+            
+        end subroutine addNoise
         
         ! generates a random reflectivity
-        subroutine genReflect(ns, sDev, mean, Ref)
+        subroutine genReflect(ns, Ref)
             integer, intent(in) :: ns              ! number of samples
-            real(kind=8), intent(in) :: sDev, mean ! standard dev and mean
 
             real(kind=8), dimension(ns), intent(out) :: Ref     ! reflectivity
 
             integer :: i                           ! iterator
 
-            do i = 1, ns
-                call randGauss(sDev, mean, Ref(i)) ! generate noise
-            end do
+            Ref = 0.d0
 
             i = mod(irand(), 20) ! generate random integer from 0 to 19
             do while (i <= ns)
@@ -186,31 +199,33 @@ module seisDeconv
             real(kind=8), dimension(nss), intent(in) :: s ! input source signature
             integer, intent(in) :: zs                     ! position of t = 0 in source signature
             integer, intent(in) :: nss                    ! number of samples of source signature
+            integer, intent(in) :: zf                     ! position of t = 0 in output filter
+            integer, intent(in) :: nsf                    ! number of samples in output filter
             
-            real(kind=8), dimension(nss), intent(out) :: f ! output filter
-            integer, intent(out) :: zf                     ! position of t = 0 in output filter
-            integer, intent(out) :: nsf                    ! number of samples in output filter
+            real(kind=8), dimension(nsf), intent(out) :: f ! output filter
             
-            real(kind=8), dimension(2*nss - 1, nss) :: A ! convolution matrix
-            real(kind=8), dimension(nss, nss) :: B       ! (A^T)*A
-            real(kind=8), dimension(nss) :: v            ! (A^T)*d
-            real(kind=8), dimension(2*nss - 1) :: d      ! kronecker delta at 2*zs - 1
-            integer :: i, j                              ! iterators
+            real(kind=8), dimension(nss + nsf - 1, nsf) :: A ! convolution matrix
+            real(kind=8), dimension(nsf, nsf) :: B           ! (A^T)*A
+            real(kind=8), dimension(nsf) :: v                ! (A^T)*d
+            real(kind=8), dimension(nss + nsf - 1) :: d      ! kronecker delta at nss/2 + zf
+            integer :: i, j                                  ! iterators
             
             ! fill convolution matrix
-            do i = 1, 2*nss - 1
-                do j = 1, nss
+            do i = 1, nss + nsf - 1
+                do j = 1, nsf
                     if (i < j .or. j <= i - nss) then
                         A(i, j) = 0
                     else
-                        A(i, j) = s(i - j + 1)
+                        A(i, j) = s(j - i + nss)
                     end if
                 end do
             end do
             
             ! construct kronecker delta
             d = 0.d0
-            d(2*zs - 1) = 1.d0 ! the position of the spike will be at 2*zs - 1 because both s and f have the zero at zs.
+            d(zs + zf - 1) = 1.d0 ! the position of the spike will be at nss/2 + zf - 1 because the position of the spike should be nss/2 positions after t = 0
+
+            ! call printMat(A, nss + nsf - 1, nsf)
             
             ! given e : reflectivity, s : source signature, x : observed signal, f : inverse filter
             ! conv(s, e) = x => conv(f, s, e) = conv(f, x) => e = conv(f, x)
@@ -220,9 +235,6 @@ module seisDeconv
 
             B = matmul(transpose(A), A) ! B = (A^T)*A
             
-            call solveLSE(B, v, nss, f)  ! solve for f.
-                
-            nsf = nss
-            zf = zs
+            call solveLSE(B, v, nsf, f)  ! solve for f.
         end subroutine
 end module seisDeconv

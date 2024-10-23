@@ -17,3 +17,9 @@ $(TARGET): $(OBJS)
 
 clean:
 	rm -f $(OBJS) $(TARGET) *.mod $(patsubst %,%/*.mod,$(INCLUDE_PATHS))
+
+run: $(TARGET)
+	./$(TARGET)
+
+plot:
+	python3 plot.py
