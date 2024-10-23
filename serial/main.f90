@@ -22,7 +22,7 @@ program main
 
     allocate(e(nsr))
     
-    e = genReflect(nsr, 2.5d0, 0.d0) ! generate random reflectivity e
+    call genReflect(nsr, 2.5d0, 0.d0, e) ! generate random reflectivity e
     
     call writeSignal(e, 1, nsr, 'bins/reflect.data') ! write e
     

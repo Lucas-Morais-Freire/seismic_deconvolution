@@ -46,9 +46,12 @@ module seisDeconv
         end subroutine printMat
 
         ! returns a random number from a gaussian distribuition
-        function randGauss(sDev, mean) result(y)
+        subroutine randGauss(sDev, mean, y)
             real(kind=8), intent(in) :: sDev, mean
-            real(kind=8) :: y, u1, u2
+
+            real(kind=8), intent(out) :: y
+            
+            real(kind=8) :: u1, u2
 
             call random_number(u1)
             u1 = 1.d0 - u1
@@ -57,17 +60,19 @@ module seisDeconv
 
             y = sDev*sqrt(-2*log(u1))*cos(2*pi*u2) + mean
 
-        end function
+        end subroutine
         
         ! generates a random reflectivity
-        function genReflect(ns, sDev, mean) result(Ref)
+        subroutine genReflect(ns, sDev, mean, Ref)
             integer, intent(in) :: ns              ! number of samples
             real(kind=8), intent(in) :: sDev, mean ! standard dev and mean
+
+            real(kind=8), dimension(ns), intent(out) :: Ref     ! reflectivity
+
             integer :: i                           ! iterator
-            real(kind=8), dimension(ns) :: Ref     ! reflectivity
 
             do i = 1, ns
-                Ref(i) = randGauss(sDev, mean) ! generate noise
+                call randGauss(sDev, mean, Ref(i)) ! generate noise
             end do
 
             i = mod(irand(), 20) ! generate random integer from 0 to 19
@@ -78,7 +83,7 @@ module seisDeconv
                 i = i + mod(irand(), 100) + 50
             end do
 
-        end function genReflect
+        end subroutine genReflect
 
         ! generates a ricker pulse
         subroutine genPulse(Psi, zi, amp, a, f, ns)
